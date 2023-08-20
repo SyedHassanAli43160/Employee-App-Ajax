@@ -1,0 +1,238 @@
+﻿@model IEnumerable<testauthcookiegoogle.Models.crud>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+ <button type="button" class="btn btn-primary" onclick="btncreateClick()" data-bs-toggle="modal" data-bs-target="#myModal">
+    Create Employee
+  </button>
+   <a class="btn btn-danger" onclick="deleteAll()">
+  delete All
+  </a>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.phoneNo)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.email)
+            </th>
+             <th>
+                Action
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody id="tableBody">
+@*@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.phoneNo)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.email)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}*@
+    </tbody>
+</table>
+
+  <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Modal Title</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            @*modal content*@
+
+           <div class="row">
+    <div class="">
+        <form >
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="text" name="id" id="id" hidden/>
+            <div class="form-group">
+                <label for="name"  class="control-label"> Enter Your Name</label>
+                <input  id="name" class="form-control" />
+      
+            </div>
+            <div class="form-group">
+                <label for="phoneNo" class="control-label">Enter Your Phone Number</label>
+                <input  id="phoneNo" class="form-control" />
+            
+            </div>
+            <div class="form-group">
+                <label for="email" class="control-label">Enter Your Email</label>
+                <input  id="email" class="form-control" />
+             
+            </div>
+            <div class="form-group">
+                <input type="button" onclick="Create()" id="createbtn" value="Create" class="create btn btn-primary" />
+                <input type="button" onclick="editPost()" id="editbtn" value="Update" class="edit btn btn-warning" />
+            </div>
+        </form>
+    </div>
+</div>
+@*modal content*@
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+   
+
+  </div>
+  <script>
+       $(document).ready(function(){
+           GetEmployees();
+       });
+       function GetEmployees(){
+
+      
+        $(document).ready(function(){
+            $.ajax({
+                type:"Get",
+                url:"@Url.Action("Getdata","cruds")",
+                data:"[]",
+                 contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function(data)
+            {            
+var output = data.map(i =>
+    "<tr><td>" + i.name + "</td><td>" + i.phoneNo +
+    "</td><td>" + i.email + "</td><td>" +
+    "<a href='#' onclick='editget(" + i.id + ")' class='btn btn-success m-2'>Edit</a> <a href='#' onclick='Delete(" + i.id + ")' class='btn btn-danger'>Delete</a>" +
+    "</td></tr>");           
+    $("#tableBody").html(output);
+            }
+            });
+        });
+         }
+ function btncreateClick(){
+      $(".create").show();
+                 $(".edit").hide();
+ }
+         
+     function Create(){   
+      var objData={
+         name:$('#name').val(),
+         phoneNo:$('#phoneNo').val(),
+         email:$('#email').val()
+       };
+     $.ajax({
+         url:'@Url.Action("Create","cruds")',
+         type:'Post',
+         data:objData,
+         contentType:'application/x-www-form-urlencoded;charset=utf-8;',
+         dataType:'json',
+         success:function(){
+            GetEmployees();
+              clearFields();
+              HideModal();
+           
+         },
+         error:function(){
+             alert("can't saved");
+         }
+     });
+ }
+
+        function HideModal(){
+     $('#myModal').modal('hide');
+ }
+ function showModal(){
+     $('#myModal').modal('show');
+ }
+         
+     function deleteAll(){
+         $.ajax({
+             type:"Get",
+             url:"@Url.Action("deleteAll","cruds")",
+      contentType: "application/json; charset=utf-8",
+       dataType: "json",
+            success: function()
+            {
+                 GetEmployees();
+               alert("All Data Deleted");
+              
+            }
+
+         });
+     }  
+     function Delete(id){
+         $.ajax({
+             type:"Get",
+             url:"/cruds/delete?id="+id,
+             contentType:"application/json; charset=utf-8",
+             dataType:"json",
+             success:function(){
+                 GetEmployees();
+                 alert("Deleted Successfully")
+             }
+         });
+     }
+     function clearFields(){
+         var  name=$('#name').val("");
+        var phoneNo=$('#phoneNo').val("");
+       var  email=$('#email').val("");
+     }
+    function editget(id){
+        showModal();     
+       
+                 $(".create").hide();
+                 $(".edit").show();
+           
+        $.ajax({
+             type:"Get",
+             url:"/cruds/edit?id="+id,
+             contentType:"application/json; charset=utf-8",
+             dataType:"json",
+             success:function(response){
+                var objData={
+                      id:$('#id').val(response.id),
+                      name:$('#name').val(response.name),
+                      phoneNo:$('#phoneNo').val(response.phoneNo),
+                      email:$('#email').val(response.email)
+                };
+                
+             }
+         });
+    }
+
+    function editPost(){
+         var objData={
+             Id:$('#id').val(),
+         name:$('#name').val(),
+         phoneNo:$('#phoneNo').val(),
+         email:$('#email').val()
+       };
+        $.ajax({
+            type:"Post",
+            url:"@Url.Action("Edit","cruds")",
+            data:objData,
+            contentType:"application/x-www-form-urlencoded;charset=utf-8;",
+            dataType:"json",
+            success:function(){
+            GetEmployees();
+              clearFields();
+              HideModal();
+            }
+        })
+    }
+     </script>
